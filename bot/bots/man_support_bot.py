@@ -55,19 +55,16 @@ class ManufacturingSupportBot(ActivityHandler):
         self.db_cnxn = db_cnxn
         #self.user_state_accessor = self.user_state.create_property("WelcomeUserState")
 
-        self.WELCOME_MESSAGE = """This is the Specdiver AI-powered chatbot POC. The bot will first ask you about your name.\
+        self.WELCOME_MESSAGE = """This is the CNC Machining Supprot Chatbot. The bot will first ask you about your name.\
                                 If you are running this bot in the Bot Framework Emulator, press the 'Restart Conversation'
                                 button to simulate user joining a bot or a channel. If you are in a web environment refresh 
                                 the page to start over."""
 
         self.INFO_MESSAGE = """"""
 
-        self.PATTERN_MESSAGE = """The bot supports two functionalities:\
-        
-            1. Answering questions related to Specdiver SPC0011 documents, and\
-            
-            2. Providing summaries, both via the UI and in an automated manner.\
-            
+        self.PATTERN_MESSAGE = """The bot supports the following functionalities:\
+            1. Answering questions related to company CNC machinining process, and\
+            2. Providing general guidance in case of issues related to production.\
             You can say 'help' or 'intro' to see the introductory help card."""
 
     async def on_turn(self, turn_context: TurnContext):
@@ -128,7 +125,7 @@ class ManufacturingSupportBot(ActivityHandler):
         """
         user_profile = await self.user_profile_accessor.get(turn_context, UserProfile)
         conversation_data = await self.conversation_data_accessor.get(turn_context, ConversationData)
-
+        current_context = ''
         if user_profile.name is None:
             # First time around this is undefined, so we will prompt user for name.
             if conversation_data.prompted_for_user_name:
@@ -143,50 +140,34 @@ class ManufacturingSupportBot(ActivityHandler):
                 # Reset the flag to allow the bot to go though the cycle again.
                 conversation_data.prompted_for_user_name = False
         else:
-            if turn_context.activity.text not in ('1','2','3','4','5'): # it is not rating
+            if turn_context.activity.text not in ('1', '2', '3', '4', '5'):  # it is not rating
         
                 text = turn_context.activity.text.lower()
-                    
-                query = [{"role": "system",
-                         "content": "You are an industrial equipment engineer. Your task is to provide accurate answers based on the data you have. If you don't know the answer, reply with 'I don't know. Perhaps the answer you are looking for is not part of the documentation.'"},
-                        {"role": "user",
-                        "content": text}]
+                current_context += ' ' + text
+                query = [
+                    {"role": "system",
+                     "content": "You are a manufacturing process expert. Your task is to help junior operators resolve \
+                     CNC machining process problems by providing accurate answers based on the data you \
+                     have. If the  answer is not available in the retrieved data, reply with \
+                     'I do not know. Maybe the answer you are looking for is not part of the source data.'", },
+                    {"role": "user",
+                     "content": text},
+                    {"role": "user",
+                     "content": current_context}]
 
-                #This example hardcodes specific utterances. You should use LUIS or QnA for more advance language understanding.            
                 if text in ("hello", "hi"):
                     await turn_context.send_activity(f"You said { text }")
                 elif text in ("intro", "help"):
                     await self.__send_intro_card(turn_context)
-                elif 'summarize this text' in text or 'provide a summary' in text or 'give me a summary' in text:
-                    out = await self.__get_gpt_summary(text)
-
-                    # typing ...
-                    typing_indicator_activity = Activity(type=ActivityTypes.typing)
-                    await turn_context.send_activity(typing_indicator_activity)
-
-                    await turn_context.send_activity(out)
-                    # Add message details to the conversation data.
-                    conversation_data.timestamp = self.__datetime_from_utc_to_local(
-                        turn_context.activity.timestamp
-                    )
-                    conversation_data.channel_id = turn_context.activity.channel_id
-                    conversation_data.gpt_response = out
-                    conversation_data.interaction_type = 'summary'
-                    
-                    # Display or save state data.
-                    await self.save_conversation_data(user_profile, conversation_data, turn_context)   
-                    
-                    # ask for rating
-                    await self.prompt_for_rating(turn_context)  
                 else:
                     # typing ...
                     typing_indicator_activity = Activity(type=ActivityTypes.typing)
                     await turn_context.send_activity(typing_indicator_activity)
-                    
+
                     gpt_response = await self.__get_gpt_response(q=query)
                     card_response = gpt_response[0]
                     text_response = gpt_response[1]
-                    
+
                     await turn_context.send_activity(MessageFactory.attachment(
                                                         CardFactory.hero_card(card_response)))  
                     # Display or save state data.
@@ -198,12 +179,12 @@ class ManufacturingSupportBot(ActivityHandler):
                     conversation_data.interaction_type = 'rag'
 
                     await self.save_conversation_data(user_profile,
-                                                    conversation_data,
-                                                    turn_context)     
+                                                      conversation_data,
+                                                      turn_context)
 
                     # ask for rating
                     await self.prompt_for_rating(turn_context)
-            else: # it is a rating response turn_context.activity.value in ('1','2','3','4','5')
+            else:  # it is a rating response turn_context.activity.value in ('1','2','3','4','5')
                 rating_value = int(turn_context.activity.text)
                 # Handle the user's rating, e.g., save it to a database
                 conversation_data.timestamp = self.__datetime_from_utc_to_local(
@@ -323,43 +304,33 @@ class ManufacturingSupportBot(ActivityHandler):
             cursor.commit()
         except Exception as e:
             logging.error(f'Error saving rating to db: {e}.')
-        
-    async def __get_gpt_summary(self, q: str) -> str:
-        
-        summarizer = OpenAIServiceSummarizer()
-        try:
-            response = await summarizer.get_summary(q)
-
-            return response
-        except Exception as e:
-            logging.error(f'Error extracting summary from the AOAI Service: {e}.')
 
     async def __get_gpt_response(self,
                                  q: list[dict[str:str]]) -> HeroCard:
-        
+
         gpt = OpenAIServiceResponder()
         try:
             response = await gpt.get_completion(q)
-                
-            # citations = [CardAction(
-            #             type = ActionTypes.download_file,
-            #             title = f'doc {nr}: {doc_name}',
-            #             image = 'https://raw.githubusercontent.com/microsoft/botframework-sdk/1171620db9f2b96eedb0cd16156e50689aa76408/icon.png',
-            #             value = url 
-            #         ) for nr, doc_name, url in response[1]]
-        
+
+            citations = [CardAction(
+                        type = ActionTypes.download_file,
+                        title = f'doc {nr}: {doc_name}',
+                        image = 'https://raw.githubusercontent.com/microsoft/botframework-sdk/1171620db9f2b96eedb0cd16156e50689aa76408/icon.png',
+                        value = url 
+                    ) for nr, doc_name, url in response[1]]
+
             card = HeroCard(
                 title='Answer: ',
                 text=response[0],
                 images=[CardImage(url="https://aka.ms/bf-welcome-card-image")]
             )
-            
-            if response[1] is not None: # means there was a legit answer
+
+            if response[1]:  # means there was a legit answer
                 bullet_points = "\n".join([f"{index}. {title}: {content}" for index, title, content in response[1]])
                 card.text += "\n\n" + 'References:'+ "\n\n" + bullet_points
 
             return (card, card.text)
-        
+
         except Exception as e:
             logging.error(f'Error getting response from the AOAI Service: {e}.')
 

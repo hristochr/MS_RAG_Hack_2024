@@ -52,8 +52,7 @@ class OpenAIServiceResponder():
                             # how many documents to show
                             'top_n_documents': 2,
                             # limit responses from the model to the grounding data content
-                            'in_scope': True,
-                            'stream': True
+                            'in_scope': True
                         }
                     }
                 ]
