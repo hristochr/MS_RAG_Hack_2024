@@ -1,3 +1,10 @@
+SELECT * FROM [Content].[AI_RagQnA]
+
+SELECT * FROM Content.AIBotChatHistory
+ORDER BY CreatedOn DESC
+
+
+/*
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -325,3 +332,4 @@ Coolant Management: Proper coolant management is crucial to avoid overheating an
 GO
 
 SELECT * FROM Content.AI_RagQnA
+*/

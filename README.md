@@ -1,4 +1,4 @@
-# MS_RAG_Hack_2024
+# Microsoft RAGHack 2024
 
 ## About
 
@@ -6,13 +6,13 @@ This is my entry to the [2024 Microsoft RAGHack](https://techcommunity.microsoft
 
 ## Solution Components
 
-The solution consists of the following components
+The solution consists of the following components:
 
-- Azure SQL
-- Azure AI Search
-- Azure OpenAI
-- Azure function with timer trigger
-- Azure Web App hosting a Bot Service
+- **Azure SQL**: storing the source data for the RAG and storing user feedback to bot responses. 
+- **Azure AI Search**: indexing (vectorizing) and storing vectorized data.
+- **Azure OpenAI**: hosting AI models and inference.
+- **Azure function** with timer trigger: automating the data vectorization process on a recurring basis (e.g. daily).
+- **Azure Web App**: hosting an Azure AI Bot Service.
 
 ### Azure SQL
 
@@ -56,7 +56,7 @@ The setup of the data source, index, skillset and indexer are done entirely prog
 |---|---|
 | `MSSQL_USERNAME`| sql login user name |
 | `MSSQL_PASSWORD`| sql login password |
-| `MSSQL_HOST`| ****.database.windows.net |
+| `MSSQL_HOST`| ***.database.windows.net |
 | `MSSQL_PORT` | 1433 |
 | `MSSQL_DATABASE` | database name |
 | `MSSQL_DRIVER` | ODBC Driver 17 for SQL Server|
@@ -95,4 +95,14 @@ The setup of the data source, index, skillset and indexer are done entirely prog
 | `MSSQL_PORT` | 1433 |
 | `MSSQL_DATABASE` | database name to use for storing conversation data|
 | `MSSQL_DRIVER` | ODBC Driver 17 for SQL Server|
+
+#### Sample questions:
+
+- Which CNC machining processes do you know and can answer questions about?
+- What are the maximum allowed vibration values during machining aluminum?
+- What is the average spindle speed across all processes?
+- What are the acceptable vibration levels for steel component milling?
+- 1. Help me troubleshoot high coolant temperature during boring of aluminum.
+- 2. I cannot boost the flow and use a chiller. What is the next best thing to do?
+
 
