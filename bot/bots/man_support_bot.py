@@ -23,12 +23,11 @@ from botbuilder.schema import (
 )
 
 from data_models import (
-    WelcomeUserState,
+    # WelcomeUserState,
     UserProfile,
     ConversationData
 )
 from azr.azropenaisvc import OpenAIServiceResponder
-from cfg.config import DbConfig
 
 
 class ManufacturingSupportBot(ActivityHandler):
@@ -53,12 +52,12 @@ class ManufacturingSupportBot(ActivityHandler):
         self.user_profile_accessor = self.user_state.create_property('UserProfile')
 
         self.db_cnxn = db_cnxn
-        #self.user_state_accessor = self.user_state.create_property("WelcomeUserState")
+        # self.user_state_accessor = self.user_state.create_property("WelcomeUserState")
 
-        self.WELCOME_MESSAGE = """This is the CNC Machining Supprot Chatbot. The bot will first ask you about your name.\
-                                If you are running this bot in the Bot Framework Emulator, press the 'Restart Conversation'
-                                button to simulate user joining a bot or a channel. If you are in a web environment refresh 
-                                the page to start over."""
+        self.WELCOME_MESSAGE = """This is the CNC Machining Support Chatbot. The bot will first ask you about your name.
+                                If you are running this bot in the Bot Framework Emulator, press the
+                                'Restart Conversation' button to simulate user joining a bot or a channel.
+                                If you are in a web environment refresh the page to start over."""
 
         self.INFO_MESSAGE = """"""
 
@@ -95,7 +94,7 @@ class ManufacturingSupportBot(ActivityHandler):
                     f"Hi there { member.name }. " + self.WELCOME_MESSAGE
                 )
 
-                # uncomment for an extra message 
+                # uncomment for an extra message
                 # await turn_context.send_activity(self.INFO_MESSAGE)
 
                 await turn_context.send_activity(self.PATTERN_MESSAGE)
@@ -141,7 +140,7 @@ class ManufacturingSupportBot(ActivityHandler):
                 conversation_data.prompted_for_user_name = False
         else:
             if turn_context.activity.text not in ('1', '2', '3', '4', '5'):  # it is not rating
-        
+
                 text = turn_context.activity.text.lower()
                 current_context += ' ' + text
                 query = [
@@ -152,7 +151,7 @@ class ManufacturingSupportBot(ActivityHandler):
                      'I do not know. Maybe the answer you are looking for is not part of the source data.'", },
                     {"role": "user",
                      "content": text},
-                    {"role": "user",
+                    {"role": "assistant",
                      "content": current_context}]
 
                 if text in ("hello", "hi"):
@@ -165,11 +164,10 @@ class ManufacturingSupportBot(ActivityHandler):
                     await turn_context.send_activity(typing_indicator_activity)
 
                     gpt_response = await self.__get_gpt_response(q=query)
-                    card_response = gpt_response[0]
-                    text_response = gpt_response[1]
+                    text_response = gpt_response.text
 
                     await turn_context.send_activity(MessageFactory.attachment(
-                                                        CardFactory.hero_card(card_response)))  
+                                                        CardFactory.hero_card(gpt_response)))
                     # Display or save state data.
                     conversation_data.timestamp = self.__datetime_from_utc_to_local(
                         turn_context.activity.timestamp
@@ -194,33 +192,34 @@ class ManufacturingSupportBot(ActivityHandler):
                 conversation_data.gpt_response = rating_value
                 conversation_data.interaction_type = 'rating'
                 await self.save_to_db(user_profile,
-                                        conversation_data,
-                                        turn_context)
-                await turn_context.send_activity(f"Thank you for rating {rating_value}!")  
-                                    
-    async def save_conversation_data(self, 
-                                    up: UserProfile,
-                                    cd: ConversationData,
-                                    tc: TurnContext) -> list[Activity] | None:
-        """_summary_
+                                      conversation_data,
+                                      turn_context)
+                await turn_context.send_activity(f"Thank you for rating {rating_value}!")
+
+    async def save_conversation_data(self,
+                                     up: UserProfile,
+                                     cd: ConversationData,
+                                     tc: TurnContext) -> list[Activity] | None:
+        """Saves conversation data to the database.
 
         Args:
             up (UserProfile): current user
             cd (ConversationData): current conversation
-            tc (TurnContext): current contenxt 
+            tc (TurnContext): current contenxt
 
         Returns:
-            list[Activity] | None: returns a list of activiites (messages) only if in the "emualtor" channel. Otherwise saves to db and returns None. 
+            list[Activity] | None: returns a list of activiites (messages) only if in the "emualtor" channel.
+            Otherwise saves to db and returns None
         """
         try:
             await self.save_to_db(up,
                                   cd,
                                   tc)
-            # uncomment the check below so that messages will be echoed back in the emulator and saved to db 
+            # uncomment the check below so that messages will be echoed back in the emulator and saved to db
             # only in case bot is accessed from another channel
             #
             # if tc.activity.channel_id in ('emulator', 'webchat'):
-            #     # just echo      
+            #     # just echo
             #     return await tc.send_activities([Activity(
             #                                 type=ActivityTypes.message,
             #                                 text=f"{ up.name } sent: { tc.activity.text }."),
@@ -232,7 +231,7 @@ class ManufacturingSupportBot(ActivityHandler):
             #                                 text=f"Message received at: { cd.timestamp }"),
             #                             Activity(
             #                                 type=ActivityTypes.message,
-            #                                 text=f"Message received from: { cd.channel_id }")])   
+            #                                 text=f"Message received from: { cd.channel_id }")])
             # else:
             #     # logic to save the data to cosmos db (ideally - but for now to MSSQL)
             #     await self.save_to_db(up,
@@ -240,7 +239,7 @@ class ManufacturingSupportBot(ActivityHandler):
             #                           tc)
         except Exception as e:
             logging.error(f'Error saving chat history: {e}.')
-        
+
     async def prompt_for_rating(self, turn_context: TurnContext):
         rating_options = [
             CardAction(type=ActionTypes.im_back, title="1", value="1"),
@@ -266,16 +265,16 @@ class ManufacturingSupportBot(ActivityHandler):
 
         await turn_context.send_activity(prompt_message)
 
-    async def save_to_db(self, 
-                        up: UserProfile,
-                        cd: ConversationData,
-                        tc: TurnContext) -> None:
+    async def save_to_db(self,
+                         up: UserProfile,
+                         cd: ConversationData,
+                         tc: TurnContext) -> None:
         """Saves conversation data to the database.
 
         Args:
             up (UserProfile): current user
             cd (ConversationData): current conversation
-            tc (TurnContext): current contenxt 
+            tc (TurnContext): current contenxt
 
         Returns:
             None: saves the rating to db.
@@ -284,22 +283,22 @@ class ManufacturingSupportBot(ActivityHandler):
             cursor = self.db_cnxn.cursor()
         except Exception as e:
             logging.error(f'Error creating db connection: {e}.')
-        
+
         try:
             # current state
             rating, prompt = None, None
             try:
                 rating = int(tc.activity.text)
-            except:
+            except Exception:
                 prompt = tc.activity.text
-            
+
             user_name = up.name
             response = cd.gpt_response
             channel = cd.channel_id
             interaction_type = cd.interaction_type
 
-            # insert 
-            insert_statement = "INSERT INTO Content.AIBotChatHistory (Rating, UserName, Prompt, Response, Channel, InteractionType) VALUES (?, ?, ?, ?, ?, ?)"
+            insert_statement = "INSERT INTO Content.AIBotChatHistory (Rating, UserName, Prompt, Response, Channel,\
+                InteractionType) VALUES (?, ?, ?, ?, ?, ?)"
             cursor.execute(insert_statement, [rating, user_name, prompt, response, channel, interaction_type])
             cursor.commit()
         except Exception as e:
@@ -311,25 +310,17 @@ class ManufacturingSupportBot(ActivityHandler):
         gpt = OpenAIServiceResponder()
         try:
             response = await gpt.get_completion(q)
-
-            citations = [CardAction(
-                        type = ActionTypes.download_file,
-                        title = f'doc {nr}: {doc_name}',
-                        image = 'https://raw.githubusercontent.com/microsoft/botframework-sdk/1171620db9f2b96eedb0cd16156e50689aa76408/icon.png',
-                        value = url 
-                    ) for nr, doc_name, url in response[1]]
-
             card = HeroCard(
                 title='Answer: ',
                 text=response[0],
-                images=[CardImage(url="https://aka.ms/bf-welcome-card-image")]
+                buttons=None
             )
 
-            if response[1]:  # means there was a legit answer
-                bullet_points = "\n".join([f"{index}. {title}: {content}" for index, title, content in response[1]])
-                card.text += "\n\n" + 'References:'+ "\n\n" + bullet_points
+            bullet_points = "\n\n".join([f"doc {index}. {title}: {content[:50]}..."
+                                         for index, title, content in response[1]])
+            card.text += "\n\n" + 'References:' + "\n\n" + bullet_points
 
-            return (card, card.text)
+            return card
 
         except Exception as e:
             logging.error(f'Error getting response from the AOAI Service: {e}.')
@@ -362,7 +353,8 @@ class ManufacturingSupportBot(ActivityHandler):
                     title="Learn how to deploy",
                     text="Learn how to deploy",
                     display_text="Learn how to deploy",
-                    value="https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-howto-deploy-azure?view=azure-bot-service-4.0",
+                    value="https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-howto-deploy-azure?\
+                        view=azure-bot-service-4.0",
                 ),
             ],
         )
@@ -370,7 +362,7 @@ class ManufacturingSupportBot(ActivityHandler):
         return await turn_context.send_activity(
             MessageFactory.attachment(CardFactory.hero_card(card))
         )
-    
+
     def __datetime_from_utc_to_local(self, utc_datetime):
         now_timestamp = time.time()
         offset = datetime.fromtimestamp(now_timestamp) - datetime.utcfromtimestamp(

@@ -105,7 +105,7 @@ def create_search_index(endpoint: str,
         fields = [
             SearchField(name='parent_id', type=SearchFieldDataType.String, sortable=True, filterable=True,
                         facetable=True),
-            SearchField(name='process_title', type=SearchFieldDataType.String),
+            SearchField(name='title', type=SearchFieldDataType.String),
             SearchField(name="chunk_id", type=SearchFieldDataType.String, key=True, sortable=True, filterable=True,
                         facetable=True, analyzer_name='keyword'),
             SearchField(name='process_info_chunk', type=SearchFieldDataType.String, sortable=False, filterable=False,
@@ -161,7 +161,11 @@ def create_search_index(endpoint: str,
         semantic_config = SemanticConfiguration(
             name='my-semantic-config',
             prioritized_fields=SemanticPrioritizedFields(
-                content_fields=[SemanticField(field_name='process_info_chunk')]
+                title_field=SemanticField(field_name='title'),
+                content_fields=[
+                    SemanticField(field_name='process_info_chunk'),
+                    SemanticField(field_name='title'),
+                    ],
             ),
         )
 
@@ -209,8 +213,8 @@ def create_skillset(index_name: str,
             description='Split skill to chunk documents',
             text_split_mode="pages",
             context='/document',
-            maximum_page_length=500,
-            page_overlap_length=100,
+            maximum_page_length=2000,
+            page_overlap_length=200,
             inputs=[
                 InputFieldMappingEntry(name='text',
                                        source='/document/ProcessInformation'),
@@ -246,7 +250,7 @@ def create_skillset(index_name: str,
                     mappings=[
                             InputFieldMappingEntry(name='process_info_chunk', source='/document/pages/*'),
                             InputFieldMappingEntry(name='vector', source='/document/pages/*/vector'),
-                            InputFieldMappingEntry(name='process_title', source='/document/Process'),
+                            InputFieldMappingEntry(name='title', source='/document/Process'),
                         ],
                 ),
             ],
@@ -300,7 +304,7 @@ def create_indexer(index_name: str,
             target_index_name=index_name,
             data_source_name=data_source.name,
             field_mappings=[FieldMapping(source_field_name='id', target_field_name='chunk_id'),
-                            FieldMapping(source_field_name='Process', target_field_name='process_title'),
+                            FieldMapping(source_field_name='Process', target_field_name='title'),
                             FieldMapping(source_field_name='ProcessInformation', target_field_name='process_info_chunk')
                             ]
         )
