@@ -67,7 +67,7 @@ class OpenAIServiceResponder():
         answer = json.loads(completion.model_dump_json(indent=2))['choices'][0]['message']['content']
         if 'The requested information is not available in the retrieved data. Please try another query ' not in answer:
             document_refs = json.loads(completion.model_dump_json(indent=2))['choices'][0]['message']['context']
-            doc_data = [(nr+1, citation['title'], citation['url'])
+            doc_data = [(nr+1, citation['title'], citation['content'])
                         for nr, citation
                         in enumerate(document_refs['citations'])]
 
