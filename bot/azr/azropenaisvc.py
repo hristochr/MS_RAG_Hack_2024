@@ -50,7 +50,7 @@ class OpenAIServiceResponder():
                             # similarity scores.
                             'strictness': 3,
                             # how many documents to show
-                            'top_n_documents': 2,
+                            'top_n_documents': 5,
                             # limit responses from the model to the grounding data content
                             'in_scope': True
                         }
@@ -59,7 +59,7 @@ class OpenAIServiceResponder():
             },
             temperature=0.25,
             top_p=1,
-            max_tokens=2048,
+            max_tokens=3096,
             stop=None
         )
 
