@@ -8,11 +8,12 @@ This is my entry to the [2024 Microsoft RAGHack](https://techcommunity.microsoft
 
 The solution consists of the following components:
 
-- **Azure SQL**: storing the source data for the RAG and storing user feedback to bot responses. 
+- **Azure SQL**: storing the source data for the RAG, storing the user prompts, the bot's responses and the feedback to bot responses. 
 - **Azure AI Search**: indexing (vectorizing) and storing vectorized data.
 - **Azure OpenAI**: hosting AI models and inference.
 - **Azure function** with timer trigger: automating the data vectorization process on a recurring basis (e.g. daily).
-- **Azure Web App**: hosting an Azure AI Bot Service.
+- **Azure AI Bot Service**: bot application.
+- **Azure Web App**: hosting the  Azure AI Bot Service.
 
 ### Azure SQL
 
@@ -96,13 +97,19 @@ The setup of the data source, index, skillset and indexer are done entirely prog
 | `MSSQL_DATABASE` | database name to use for storing conversation data|
 | `MSSQL_DRIVER` | ODBC Driver 17 for SQL Server|
 
-#### Sample questions:
+## Deployment 
+
+Examine the bash scrirpts in `/deploy`. Adjust the variables and run from a Bash terminal. 
+Once the services are deployed:
+- Set your environment variables in Azure.
+- configure the web app startup command: `python3.11 -m aiohttp.web -H 0.0.0.0 -P 8000 app:init_func`
+- configure the messaging endpoint in your bot service `{webappname}/api/messages`
+
+## Sample questions:
 
 - Which CNC machining processes do you know and can answer questions about?
 - What are the maximum allowed vibration values during machining aluminum?
 - What is the average spindle speed across all processes?
 - What are the acceptable vibration levels for steel component milling?
-- 1. Help me troubleshoot high coolant temperature during boring of aluminum.
-- 2. I cannot boost the flow and use a chiller. What is the next best thing to do?
-
-
+    1. Help me troubleshoot high coolant temperature during boring of aluminum.
+    2. I cannot boost the flow or use a chiller. What is the next best thing to do?
