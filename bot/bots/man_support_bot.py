@@ -105,7 +105,8 @@ class ManufacturingSupportBot(ActivityHandler):
 
                     # Acknowledge that we got their name.
                     await turn_context.send_activity(
-                        f"Thanks, { user_profile.name }. To continue interacting with the Specdiver bot, type anything."
+                        f"Thanks, { user_profile.name }. \
+                        To continue interacting with the Manufacturing Support bot, type anything."
                     )
 
                     # Reset the flag to allow the bot to go though the cycle again.
@@ -133,7 +134,8 @@ class ManufacturingSupportBot(ActivityHandler):
 
                 # Acknowledge that we got their name.
                 await turn_context.send_activity(
-                    f"Thanks, { user_profile.name }. To continue interacting with the Specdiver bot, type anything."
+                    f"Thanks, { user_profile.name }.  \
+                    To continue interacting with the Manufacturing Support bot, type anything."
                 )
 
                 # Reset the flag to allow the bot to go though the cycle again.

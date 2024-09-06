@@ -4,7 +4,6 @@ SELECT * FROM Content.AIBotChatHistory
 ORDER BY CreatedOn DESC
 
 
-/*
 SET ANSI_NULLS ON
 GO
 SET QUOTED_IDENTIFIER ON
@@ -21,7 +20,7 @@ INSERT INTO [Content].[AI_RagQnA]
 (
  [Process], [ProcessInformation]
 )
-VALUES --credit to chatgpt
+VALUES --these are synthetic data generated with chatgpt
 (
  'CNC Milling Process for Steel Component', 'Material: AISI 1045 Medium Carbon Steel
 Machine Type: CNC Vertical Milling Machine
@@ -83,7 +82,7 @@ Q: What should I do if the surface finish is not smooth?
 A: If the surface finish is rough, try reducing the feed rate, increasing the spindle speed slightly, or using a tool with more flutes. Check for tool wear or damage, and ensure the workpiece is clamped securely. Also, verify that the coolant is applied correctly to reduce heat buildup.
 '
 ),
-( -- Second row: values for the columns in the list above
+( -- Second process
  'CNC Drilling Process for Aluminum Component', 'Material: 6061-T6 Aluminum
 Machine Type: CNC Vertical Drilling Machine
 Operation: Drilling
@@ -146,7 +145,7 @@ Q: How can I prevent the workpiece from moving during drilling?
 
 A: Make sure the workpiece is properly clamped and supported. Use additional clamps or fixtures if necessary to prevent movement. Check the machine setup for any loose components that might cause shifting during operation.'
 ),
-(
+( --third process
 	'CNC Turning Process for Titanium Alloy Component','Material: Ti-6Al-4V (Titanium Grade 5)
 Machine Type: CNC Lathe
 Operation: Turning
@@ -212,7 +211,8 @@ Q: How can I prevent the workpiece from moving during drilling?
 A: Make sure the workpiece is properly clamped and supported. Use additional clamps or fixtures if necessary to prevent movement. Check the machine setup for any loose components that might cause shifting during operation.
 '
 ),
-('CNC Grinding Process for Hardened Steel Component','Material: AISI D2 Tool Steel (Hardened to 60 HRC)
+( -- fourth  process
+'CNC Grinding Process for Hardened Steel Component','Material: AISI D2 Tool Steel (Hardened to 60 HRC)
 Machine Type: CNC Surface Grinder
 Operation: Surface Grinding
 Grinding Wheel: Aluminum Oxide Wheel, 200 mm Diameter, 25 mm Width, 46 Grit
@@ -267,7 +267,8 @@ A: For a better surface finish, reduce the feed rate, decrease the depth of cut,
 Q: What should I do if the grinding wheel starts to vibrate excessively?
 
 A: Excessive vibration can be caused by an unbalanced wheel, incorrect mounting, or loose components. First, stop the machine and check the wheel balance, inspect the mounting, and ensure the spindle and machine setup are secure.'),
-('CNC Boring Process for Aluminum Alloy Component','Material: 7075 Aluminum Alloy
+(( -- fifth process
+'CNC Boring Process for Aluminum Alloy Component','Material: 7075 Aluminum Alloy
 Machine Type: CNC Horizontal Boring Mill
 Operation: Boring
 Cutting Tool: Carbide Boring Bar with a TiN Coated Insert
