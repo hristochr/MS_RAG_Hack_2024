@@ -113,3 +113,8 @@ Once the services are deployed:
 - What are the acceptable vibration levels for steel component milling?
     1. Help me troubleshoot high coolant temperature during boring of aluminum.
     2. I cannot boost the flow or use a chiller. What is the next best thing to do?
+
+## Others
+
+- [project submission](https://github.com/microsoft/RAG_Hack/issues/58)
+- [video](https://www.youtube.com/watch?v=GN0SccxbpjI)
