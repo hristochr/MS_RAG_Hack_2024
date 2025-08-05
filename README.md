@@ -118,3 +118,4 @@ Once the services are deployed:
 
 - [project submission](https://github.com/microsoft/RAG_Hack/issues/58)
 - [video](https://www.youtube.com/watch?v=GN0SccxbpjI)
+- [Announcing the winners of RAGHack 2024](https://techcommunity.microsoft.com/blog/azuredevcommunityblog/announcing-the-winners-of-raghack-2024/4259059)
