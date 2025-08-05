@@ -108,7 +108,7 @@ Once the services are deployed:
 ## Sample questions:
 
 - Which CNC machining processes do you know and can answer questions about?
-- What are the maximum allowed vibration values during machining aluminum?
+- What are the maximum allowed vibration values during the machining of aluminum?
 - What is the average spindle speed across all processes?
 - What are the acceptable vibration levels for steel component milling?
     1. Help me troubleshoot high coolant temperature during boring of aluminum.
